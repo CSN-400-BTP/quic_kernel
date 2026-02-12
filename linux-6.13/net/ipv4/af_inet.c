@@ -252,6 +252,11 @@ EXPORT_SYMBOL(inet_listen);
 static int inet_create(struct net *net, struct socket *sock, int protocol,
 		       int kern)
 {
+	// Debug statement - swapg
+	if (sock->type == SOCK_QUIC) {
+		printk(KERN_INFO "QUIC_LOG : SOCK_QUIC detected! Redirecting to UDP for now coz no code yet.");
+	}
+	//
 	struct sock *sk;
 	struct inet_protosw *answer;
 	struct inet_sock *inet;
@@ -1183,7 +1188,15 @@ static struct inet_protosw inetsw_array[] =
 	       .prot =       &raw_prot,
 	       .ops =        &inet_sockraw_ops,
 	       .flags =      INET_PROTOSW_REUSE,
-       }
+       },
+	   // For now this redirects to UDP, only changing the "socktype" - swapg
+	   {
+			.type =      SOCK_QUIC,
+			.protocol =  IPPROTO_UDP,
+			.prot =      &udp_prot,
+			.ops =       &inet_dgram_ops,
+			.flags =     INET_PROTOSW_PERMANENT, 
+	   },
 };
 
 #define INETSW_ARRAY_LEN ARRAY_SIZE(inetsw_array)

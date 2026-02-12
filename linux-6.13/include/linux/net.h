@@ -69,9 +69,10 @@ enum sock_type {
 	SOCK_SEQPACKET	= 5,
 	SOCK_DCCP	= 6,
 	SOCK_PACKET	= 10,
+	SOCK_QUIC = 11, // Added for QUIC packets - swapg
 };
 
-#define SOCK_MAX (SOCK_PACKET + 1)
+#define SOCK_MAX (SOCK_QUIC + 1) //  - swapg
 /* Mask which covers at least up to SOCK_MASK-1.  The
  * remaining bits are used as flags. */
 #define SOCK_TYPE_MASK 0xf
