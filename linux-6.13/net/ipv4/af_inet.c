@@ -103,6 +103,7 @@
 #include <net/gso.h>
 #include <net/tcp.h>
 #include <net/udp.h>
+#include <net/quic.h> // - swapg
 #include <net/udplite.h>
 #include <net/ping.h>
 #include <linux/skbuff.h>
@@ -1189,11 +1190,11 @@ static struct inet_protosw inetsw_array[] =
 	       .ops =        &inet_sockraw_ops,
 	       .flags =      INET_PROTOSW_REUSE,
        },
-	   // For now this redirects to UDP, only changing the "socktype" - swapg
+	   // Goes through my custom handler now - swapg
 	   {
 			.type =      SOCK_QUIC,
 			.protocol =  IPPROTO_UDP,
-			.prot =      &udp_prot,
+			.prot =      &quic_prot,
 			.ops =       &inet_dgram_ops,
 			.flags =     INET_PROTOSW_PERMANENT, 
 	   },
@@ -1920,9 +1921,13 @@ static int __init inet_init(void)
 
 	raw_hashinfo_init(&raw_v4_hashinfo);
 
-	rc = proto_register(&tcp_prot, 1);
+	rc = proto_register(&quic_prot, 1);
 	if (rc)
 		goto out;
+
+	rc = proto_register(&tcp_prot, 1);
+	if (rc)
+		goto out_unregister_quic_proto;
 
 	rc = proto_register(&udp_prot, 1);
 	if (rc)
@@ -2045,6 +2050,8 @@ out_unregister_udp_proto:
 	proto_unregister(&udp_prot);
 out_unregister_tcp_proto:
 	proto_unregister(&tcp_prot);
+out_unregister_quic_proto:
+	proto_unregister(&quic_prot);
 	goto out;
 }
 
